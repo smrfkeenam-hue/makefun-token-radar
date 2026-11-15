@@ -397,19 +397,19 @@ function dollars(n: number): string {
 
 /** The category's one action, in the words a farmer can follow. */
 function actionFor(p: SnapshotProtocol, capital: number, chain: string): string {
-  const c = (p.category ?? '').toLowerCase();
-  const name = p.name;
-  if (c.includes('lend') || c.includes('cdp') || c.includes('collateral')) return `Supply $${capital} of USDC to ${name} on ${chain} and keep the position open.`;
-  if (c.includes('dex') || c.includes('yield') || c.includes('leveraged farm')) return `Provide $${capital} of liquidity to ${name}'s main pool on ${chain} and keep the position open.`;
-  if (c.includes('bridge')) return `Bridge $${capital} of USDC to ${chain} through ${name} and use the bridged funds in its app.`;
-  if (c.includes('staking') || c.includes('restak')) return `Stake $${capital} of the chain's staking asset through ${name} and keep the receipt.`;
-  if (c.includes('perpetual') || c.includes('derivative')) return `Deposit $${capital} of USDC as margin on ${name} and open one small hedge.`;
-  if (c.includes('prediction')) return `Fund $${capital} and place one market position on ${name}.`;
-  if (c.includes('curator') || c.includes('allocator')) return `Deposit $${capital} into a ${name} vault on ${chain} and keep the shares.`;
-  if (c.includes('stable')) return `Mint or deposit $${capital} of the stable asset through ${name} on ${chain}.`;
-  if (c.includes('rwa')) return `Mint $${capital} of the protocol's yield asset on ${chain} and hold it.`;
-  if (c.includes('insurance')) return `Buy $${capital} of cover from ${name} on ${chain} and keep the policy.`;
-  return `Deposit $${capital} of USDC into ${name} on ${chain} and keep the position open.`;
+  const cat = (p.category ?? '').toLowerCase();
+  const n = p.name;
+  if (cat.includes('lend') || cat.includes('cdp') || cat.includes('collateral')) return `Supply $${capital} of USDC to ${n} on ${chain} and keep the position open.`;
+  if (cat.includes('dex') || cat.includes('yield') || cat.includes('leveraged farm')) return `Provide $${capital} of liquidity to ${n}'s main pool on ${chain} and keep the position open.`;
+  if (cat.includes('bridge')) return `Bridge $${capital} of USDC to ${chain} through ${n} and use the bridged funds in its app.`;
+  if (cat.includes('staking') || cat.includes('restak')) return `Stake $${capital} of the chain's staking asset through ${n} and keep the receipt.`;
+  if (cat.includes('perpetual') || cat.includes('derivative')) return `Deposit $${capital} of USDC as margin on ${n} and open one small hedge.`;
+  if (cat.includes('prediction')) return `Fund $${capital} and place one market position on ${n}.`;
+  if (cat.includes('curator') || cat.includes('allocator')) return `Deposit $${capital} into a ${n} vault on ${chain} and keep the shares.`;
+  if (cat.includes('stable')) return `Mint or deposit $${capital} of the stable asset through ${n} on ${chain}.`;
+  if (cat.includes('rwa')) return `Mint $${capital} of the protocol's yield asset on ${chain} and hold it.`;
+  if (cat.includes('insurance')) return `Buy $${capital} of cover from ${n} on ${chain} and keep the policy.`;
+  return `Deposit $${capital} of USDC into ${n} on ${chain} and keep the position open.`;
 }
 
 /**
@@ -425,43 +425,16 @@ export function farmSteps(p: SnapshotProtocol, age: number | null): FarmStep[] {
   const action = actionFor(p, capital, chain);
   const growth = p.change_7d === null ? 'unreported' : `${p.change_7d >= 0 ? '+' : ''}${p.change_7d.toFixed(1)}% over seven days`;
   const ageText = age === null ? 'an unlisted age' : age >= 365 ? `${(age / 365).toFixed(1)} years` : `${Math.round(age)} days`;
-  return [
-    {
-      text: `Use a fresh wallet that holds only the funds you plan to farm, and keep its seed phrase offline.`,
-      cost: `about $${gas.first} of gas for the first transaction on ${chain}`,
-      time: '5 minutes',
-    },
-    {
-      text: `Check why this one: ${p.name} holds ${dollars(p.tvl_usd)} of TVL, ${growth}, and has run ${ageText} with no token on record.`,
-      cost: 'nothing to check',
-      time: '10 minutes',
-    },
-    {
-      text: action,
-      cost: `$${capital} of capital and about $${gas.first} of gas`,
-      time: '15 minutes to set up',
-    },
-    {
-      text: `Make one qualifying action each week, such as a deposit, a borrow, a swap or a vote.`,
-      cost: `about $${gas.weekly} of gas a week on ${chain}`,
-      time: '10 minutes a week',
-    },
-    {
-      text: `Hold the position for at least ${hold} days so the activity is counted in more than one snapshot.`,
-      cost: `the $${capital} stays in the position`,
-      time: `${hold} days`,
-    },
-    {
-      text: `Before you withdraw, open the protocol's own points or rewards page and claim only from the link it publishes.`,
-      cost: 'no fee to check, and never pay to claim',
-      time: '10 minutes',
-    },
-    {
-      text: `Write the wallet, the dates and every transaction in a farm log so you can repeat the position or unwind it.`,
-      cost: 'nothing but the log',
-      time: '5 minutes',
-    },
+  const plan: [string, string, string][] = [
+    [`Use a fresh wallet that holds only the funds you plan to farm, and keep its seed phrase offline.`, `about $${gas.first} of gas for the first transaction on ${chain}`, '5 minutes'],
+    [`Check why this one: ${p.name} holds ${dollars(p.tvl_usd)} of TVL, ${growth}, and has run ${ageText} with no token on record.`, 'nothing to check', '10 minutes'],
+    [action, `$${capital} of capital and about $${gas.first} of gas`, '15 minutes to set up'],
+    [`Make one qualifying action each week, such as a deposit, a borrow, a swap or a vote.`, `about $${gas.weekly} of gas a week on ${chain}`, '10 minutes a week'],
+    [`Hold the position for at least ${hold} days so the activity is counted in more than one snapshot.`, `the $${capital} stays in the position`, `${hold} days`],
+    [`Before you withdraw, open the protocol's own points or rewards page and claim only from the link it publishes.`, 'no fee to check, and never pay to claim', '10 minutes'],
+    [`Write the wallet, the dates and every transaction in a farm log so you can repeat the position or unwind it.`, 'nothing but the log', '5 minutes'],
   ];
+  return plan.map(([text, cost, time]) => ({ text, cost, time }));
 }
 
 /** The live-token protocols, by market cap, for the dashboard's Live token view. */
